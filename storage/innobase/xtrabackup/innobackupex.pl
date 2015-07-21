@@ -9,7 +9,7 @@
 
 use warnings FATAL => 'all';
 use strict;
-use Getopt::Long;
+use Getopt::Long qw(GetOptionsFromArray);
 use File::Spec;
 use Pod::Usage qw(pod2usage);
 use POSIX "strftime";
@@ -3811,6 +3811,7 @@ sub check_args {
     my $rcode;
     my $buf;
     my $perl_version;
+    my $xtrabackup_conf = '/etc/default/xtrabackup';
 
     # check the version of the perl we are running
     if (!defined $^V) {
@@ -3821,6 +3822,86 @@ sub check_args {
                 "Your perl is too old! Innobackup requires\n";
             print STDERR "$prefix Warning: perl $required_version or newer!\n";
         }
+    }
+
+    # check if a default config exists
+    if ( -f $xtrabackup_conf ) {
+        open my $fh, '<', $xtrabackup_conf or die "Cannot open $xtrabackup_conf $OS_ERROR";
+        chomp(my @default_options = <$fh>);
+        close $fh;
+
+        # just reuse this
+        $rcode = GetOptionsFromArray(\@default_options, 'compress' => \$option_compress,
+                            'decompress' => \$option_decompress,
+                            'compress-threads=i' => \$option_compress_threads,
+                            'compress-chunk-size=s' => \$option_compress_chunk_size,
+                            'encrypt=s' => \$option_encrypt,
+                            'decrypt=s' => \$option_decrypt,
+                            'encrypt-key=s' => \$option_encrypt_key,
+                            'encrypt-key-file=s' => \$option_encrypt_key_file,
+                            'encrypt-threads=i' => \$option_encrypt_threads,
+                            'encrypt-chunk-size=s' => \$option_encrypt_chunk_size,
+                            'help' => \$option_help,
+                            'history:s' => \$option_history,
+                            'version' => \$option_version,
+                            'throttle=i' => \$option_throttle,
+                            'log-copy-interval=i', \$option_log_copy_interval,
+                            'sleep=i' => \$option_sleep,
+                            'apply-log' => \$option_apply_log,
+                            'redo-only' => \$option_redo_only,
+                            'copy-back' => \$option_copy_back,
+                            'move-back' => \$option_move_back,
+                            'include=s' => \$option_include,
+                            'databases=s' => \$option_databases,
+                            'tables-file=s', => \$option_tables_file,
+                            'use-memory=s' => \$option_use_memory,
+                            'export' => \$option_export,
+                            'password:s' => \$option_mysql_password,
+                            'user=s' => \$option_mysql_user,
+                            'host=s' => \$option_mysql_host,
+                            'port=s' => \$option_mysql_port,
+                            'defaults-group=s' => \$option_defaults_group,
+                            'slave-info' => \$option_slave_info,
+                            'galera-info' => \$option_galera_info,
+                            'socket=s' => \$option_mysql_socket,
+                            'no-timestamp' => \$option_no_timestamp,
+                            'defaults-file=s' => \$option_defaults_file,
+                            'defaults-extra-file=s' => \$option_defaults_extra_file,
+                            'incremental' => \$option_incremental,
+                            'incremental-basedir=s' => \$option_incremental_basedir,
+                            'incremental-force-scan' => \$option_incremental_force_scan,
+                            'incremental-history-name=s' => \$option_incremental_history_name,
+                            'incremental-history-uuid=s' => \$option_incremental_history_uuid,
+                            'incremental-lsn=s' => \$option_incremental_lsn,
+                            'incremental-dir=s' => \$option_incremental_dir,
+                            'extra-lsndir=s' => \$option_extra_lsndir,
+                            'stream=s' => \$option_stream,
+                            'rsync' => \$option_rsync,
+                            'tmpdir=s' => \$option_tmpdir,
+                            'no-lock' => \$option_no_lock,
+                            'ibbackup=s' => \$option_ibbackup_binary,
+                            'parallel=i' => \$option_parallel,
+                            'safe-slave-backup' => \$option_safe_slave_backup,
+                            'safe-slave-backup-timeout=i' => \$option_safe_slave_backup_timeout,
+                            'close-files' => \$option_close_files,
+                            'compact' => \$option_compact,
+                            'rebuild-indexes' => \$option_rebuild_indexes,
+                            'rebuild-threads=i' => \$option_rebuild_threads,
+                            'debug-sleep-before-unlock=i' =>
+                            \$option_debug_sleep_before_unlock,
+                            'kill-long-queries-timeout=i' =>
+                            \$option_kill_long_queries_timeout,
+                            'kill-long-query-type=s' =>
+                            \$option_kill_long_query_type,
+                            'lock-wait-timeout=i' => \$option_lock_wait_timeout,
+                            'lock-wait-threshold=i' => \$option_lock_wait_threshold,
+                            'lock-wait-query-type=s' =>
+                            \$option_lock_wait_query_type,
+                            'version-check!' => \$option_version_check,
+                            'force-non-empty-directories' =>
+                            \$option_force_non_empty_dirs,
+                            'backup-locks!' => \$option_backup_locks
+        );
     }
 
     # read command line options
