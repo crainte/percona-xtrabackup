@@ -3811,7 +3811,7 @@ sub check_args {
     my $rcode;
     my $buf;
     my $perl_version;
-    my $xtrabackup_conf = '/etc/default/xtrabackup';
+    my $xtrabackup_conf = '/etc/default/innobackupex';
 
     # check the version of the perl we are running
     if (!defined $^V) {
